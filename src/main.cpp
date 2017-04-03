@@ -75,9 +75,9 @@ int main(int argc, char* argv[]) {
   // timestamp)
   while (getline(in_file_, line)) {
     string sensor_type;
-    MeasurementPackage meas_package;
     GroundTruthPackage gt_package;
     istringstream iss(line);
+    MeasurementPackage meas_package(iss);
     long long timestamp;
 
     // reads first element from the current line
