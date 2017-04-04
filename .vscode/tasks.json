@@ -5,7 +5,7 @@
     "command": "make",
     "cwd": "",
     "options": {
-        "cwd": "${workspaceRoot}/build"
+        "cwd": "${workspaceRoot}/debug"
     },
     "isShellCommand": true,
     "args": [],

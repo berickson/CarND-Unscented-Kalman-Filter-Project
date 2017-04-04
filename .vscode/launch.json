@@ -6,7 +6,7 @@
             "name": "C++ Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/build/UnscentedKF",
+            "program": "${workspaceRoot}/debug/UnscentedKF",
             "args": ["${workspaceRoot}/data/sample-laser-radar-measurement-data-2.txt","output/out2.txt"],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
@@ -40,7 +40,7 @@
             "name": "C++ Attach",
             "type": "cppdbg",
             "request": "attach",
-            "program": "${workspaceRoot}/build/UnscentedKF",
+            "program": "${workspaceRoot}/debug/UnscentedKF",
             "processId": "${command:pickProcess}",
             "linux": {
                 "MIMode": "gdb",

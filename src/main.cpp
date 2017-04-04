@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
    *  Set Measurements                          *
    **********************************************/
 
-  vector<MeasurementPackage> measurement_pack_list;
+  vector<MeasurementPackage *> measurement_pack_list;
   vector<GroundTruthPackage> gt_pack_list;
 
   string line;
@@ -77,7 +77,8 @@ int main(int argc, char* argv[]) {
     string sensor_type;
     GroundTruthPackage gt_package;
     istringstream iss(line);
-    MeasurementPackage meas_package(iss);
+    MeasurementPackage * meas_package = new MeasurementPackage(iss);
+    // MeasurementPackage meas_package(iss);
     long long timestamp;
 
     // reads first element from the current line
@@ -87,31 +88,31 @@ int main(int argc, char* argv[]) {
       // laser measurement
 
       // read measurements at this timestamp
-      meas_package.sensor_type_ = MeasurementPackage::LASER;
-      meas_package.raw_measurements_ = VectorXd(2);
+      meas_package->sensor_type_ = MeasurementPackage::LASER;
+      meas_package->raw_measurements_ = VectorXd(2);
       float px;
       float py;
       iss >> px;
       iss >> py;
-      meas_package.raw_measurements_ << px, py;
+      meas_package->raw_measurements_ << px, py;
       iss >> timestamp;
-      meas_package.timestamp_ = timestamp;
+      meas_package->timestamp_ = timestamp;
       measurement_pack_list.push_back(meas_package);
     } else if (sensor_type.compare("R") == 0) {
       // radar measurement
 
       // read measurements at this timestamp
-      meas_package.sensor_type_ = MeasurementPackage::RADAR;
-      meas_package.raw_measurements_ = VectorXd(3);
+      meas_package->sensor_type_ = MeasurementPackage::RADAR;
+      meas_package->raw_measurements_ = VectorXd(3);
       float ro;
       float phi;
       float ro_dot;
       iss >> ro;
       iss >> phi;
       iss >> ro_dot;
-      meas_package.raw_measurements_ << ro, phi, ro_dot;
+      meas_package->raw_measurements_ << ro, phi, ro_dot;
       iss >> timestamp;
-      meas_package.timestamp_ = timestamp;
+      meas_package->timestamp_ = timestamp;
       measurement_pack_list.push_back(meas_package);
     }
 
@@ -158,7 +159,7 @@ int main(int argc, char* argv[]) {
 
   for (size_t k = 0; k < number_of_measurements; ++k) {
     // Call the UKF-based fusion
-    ukf.ProcessMeasurement(measurement_pack_list[k]);
+    ukf.ProcessMeasurement(*measurement_pack_list[k]);
 
     // output the estimation
     out_file_ << ukf.x_(0) << "\t"; // pos1 - est
@@ -168,18 +169,18 @@ int main(int argc, char* argv[]) {
     out_file_ << ukf.x_(4) << "\t"; // yaw_rate -est
 
     // output the measurements
-    if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
+    if (measurement_pack_list[k]->sensor_type_ == MeasurementPackage::LASER) {
       // output the estimation
 
       // p1 - meas
-      out_file_ << measurement_pack_list[k].raw_measurements_(0) << "\t";
+      out_file_ << measurement_pack_list[k]->raw_measurements_(0) << "\t";
 
       // p2 - meas
-      out_file_ << measurement_pack_list[k].raw_measurements_(1) << "\t";
-    } else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
+      out_file_ << measurement_pack_list[k]->raw_measurements_(1) << "\t";
+    } else if (measurement_pack_list[k]->sensor_type_ == MeasurementPackage::RADAR) {
       // output the estimation in the cartesian coordinates
-      float ro = measurement_pack_list[k].raw_measurements_(0);
-      float phi = measurement_pack_list[k].raw_measurements_(1);
+      float ro = measurement_pack_list[k]->raw_measurements_(0);
+      float phi = measurement_pack_list[k]->raw_measurements_(1);
       out_file_ << ro * cos(phi) << "\t"; // p1_meas
       out_file_ << ro * sin(phi) << "\t"; // p2_meas
     }
@@ -192,9 +193,9 @@ int main(int argc, char* argv[]) {
 
     // output the NIS values
     
-    if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
+    if (measurement_pack_list[k]->sensor_type_ == MeasurementPackage::LASER) {
       out_file_ << ukf.NIS_laser_ << "\n";
-    } else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
+    } else if (measurement_pack_list[k]->sensor_type_ == MeasurementPackage::RADAR) {
       out_file_ << ukf.NIS_radar_ << "\n";
     }
 
@@ -211,7 +212,6 @@ int main(int argc, char* argv[]) {
     
     estimations.push_back(ukf_x_cartesian_);
     ground_truth.push_back(gt_pack_list[k].gt_values_);
-
   }
 
   // compute the accuracy (RMSE)
@@ -226,6 +226,12 @@ int main(int argc, char* argv[]) {
   if (in_file_.is_open()) {
     in_file_.close();
   }
+
+  // free up memory
+  for (auto measurement :  measurement_pack_list ) {
+    delete measurement;
+  }
+  measurement_pack_list.clear();
 
   cout << "Done!" << endl;
   return 0;

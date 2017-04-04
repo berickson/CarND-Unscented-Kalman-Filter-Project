@@ -11,8 +11,8 @@ class Sensor {
 public:
   virtual ~Sensor(){}
   Sensor(){}
-  Sensor(const Sensor&) = delete;
-  Sensor& operator=(const Sensor&) = delete;  
+  //Sensor(const Sensor&) = delete;
+  //Sensor& operator=(const Sensor&) = delete;  
 };
 
 class LaserSensor : public Sensor{
