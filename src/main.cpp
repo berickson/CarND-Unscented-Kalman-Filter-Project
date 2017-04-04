@@ -77,57 +77,23 @@ int main(int argc, char* argv[]) {
     string sensor_type;
     GroundTruthPackage gt_package;
     istringstream iss(line);
-    MeasurementPackage * meas_package = new MeasurementPackage(iss);
+    MeasurementPackage * meas_package = read_measurement(iss);
+    measurement_pack_list.push_back(meas_package);
     // MeasurementPackage meas_package(iss);
     long long timestamp;
 
-    // reads first element from the current line
-    iss >> sensor_type;
-
-    if (sensor_type.compare("L") == 0) {
-      // laser measurement
-
-      // read measurements at this timestamp
-      meas_package->sensor_type_ = MeasurementPackage::LASER;
-      meas_package->raw_measurements_ = VectorXd(2);
-      float px;
-      float py;
-      iss >> px;
-      iss >> py;
-      meas_package->raw_measurements_ << px, py;
-      iss >> timestamp;
-      meas_package->timestamp_ = timestamp;
-      measurement_pack_list.push_back(meas_package);
-    } else if (sensor_type.compare("R") == 0) {
-      // radar measurement
-
-      // read measurements at this timestamp
-      meas_package->sensor_type_ = MeasurementPackage::RADAR;
-      meas_package->raw_measurements_ = VectorXd(3);
-      float ro;
-      float phi;
-      float ro_dot;
-      iss >> ro;
-      iss >> phi;
-      iss >> ro_dot;
-      meas_package->raw_measurements_ << ro, phi, ro_dot;
-      iss >> timestamp;
-      meas_package->timestamp_ = timestamp;
-      measurement_pack_list.push_back(meas_package);
-    }
-
-      // read ground truth data to compare later
-      float x_gt;
-      float y_gt;
-      float vx_gt;
-      float vy_gt;
-      iss >> x_gt;
-      iss >> y_gt;
-      iss >> vx_gt;
-      iss >> vy_gt;
-      gt_package.gt_values_ = VectorXd(4);
-      gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
-      gt_pack_list.push_back(gt_package);
+    // read ground truth data to compare later
+    float x_gt;
+    float y_gt;
+    float vx_gt;
+    float vy_gt;
+    iss >> x_gt;
+    iss >> y_gt;
+    iss >> vx_gt;
+    iss >> vy_gt;
+    gt_package.gt_values_ = VectorXd(4);
+    gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
+    gt_pack_list.push_back(gt_package);
   }
 
   // Create a UKF instance
@@ -169,21 +135,8 @@ int main(int argc, char* argv[]) {
     out_file_ << ukf.x_(4) << "\t"; // yaw_rate -est
 
     // output the measurements
-    if (measurement_pack_list[k]->sensor_type_ == MeasurementPackage::LASER) {
-      // output the estimation
-
-      // p1 - meas
-      out_file_ << measurement_pack_list[k]->raw_measurements_(0) << "\t";
-
-      // p2 - meas
-      out_file_ << measurement_pack_list[k]->raw_measurements_(1) << "\t";
-    } else if (measurement_pack_list[k]->sensor_type_ == MeasurementPackage::RADAR) {
-      // output the estimation in the cartesian coordinates
-      float ro = measurement_pack_list[k]->raw_measurements_(0);
-      float phi = measurement_pack_list[k]->raw_measurements_(1);
-      out_file_ << ro * cos(phi) << "\t"; // p1_meas
-      out_file_ << ro * sin(phi) << "\t"; // p2_meas
-    }
+    out_file_ << measurement_pack_list[k]->x << "\t";
+    out_file_ << measurement_pack_list[k]->y << "\t";
 
     // output the ground truth packages
     out_file_ << gt_pack_list[k].gt_values_(0) << "\t";

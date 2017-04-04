@@ -10,58 +10,16 @@ using namespace std;
 class Sensor {
 public:
   virtual ~Sensor(){}
+protected:
   Sensor(){}
-  //Sensor(const Sensor&) = delete;
-  //Sensor& operator=(const Sensor&) = delete;  
 };
 
-class LaserSensor : public Sensor{
+
+struct MeasurementPackage {
 public:
-  float x = NAN;
-  float y = NAN;
-
-  LaserSensor(std::istream & s) : Sensor() {
-    s >> x >> y;
-  }
-  virtual ~LaserSensor();
-};
-
-class RadarSensor : public Sensor {
-public:
-  float ro = NAN;  // radial distance to object
-  float phi = NAN; // angle to object
-  float ro_dot = NAN; // rate of change of radial distance
-
-  float x = NAN;
-  float y = NAN;
-
-  RadarSensor(std::istream & s) {
-    s >> ro >> phi >> ro_dot;
-    x = ro * sin(phi);
-    y = ro * cos(phi);
-  }
-  virtual ~RadarSensor();
-};
-
-class MeasurementPackage {
-public:
-  MeasurementPackage(std::istream & s) 
-  {
-    string sensor_type_char;
-    s >> sensor_type_char;
-    if (sensor_type_char.compare("L") == 0) {
-      //sensor_.reset(new LaserSensor(s));
-      return;
-    } 
-    if (sensor_type_char.compare("R") == 0) {
-      //sensor_.reset(new RadarSensor(s));
-      return;
-    } 
-
-  }
   long long timestamp_;
-
-  unique_ptr<Sensor> sensor_;
+  float x = NAN;
+  float y = NAN;
 
   enum SensorType{
     LASER,
@@ -69,7 +27,40 @@ public:
   } sensor_type_;
 
   Eigen::VectorXd raw_measurements_;
-
 };
+
+struct LaserSensor : public MeasurementPackage
+{
+public:
+  LaserSensor(std::istream & s) 
+  {
+    sensor_type_ = MeasurementPackage::LASER;
+    s >> x >> y >> timestamp_;
+    raw_measurements_ = Eigen::VectorXd(2);
+    raw_measurements_ << x, y;
+  }
+  virtual ~LaserSensor(){}
+};
+
+struct RadarSensor : public MeasurementPackage {
+public:
+  float ro = NAN;  // radial distance to object
+  float phi = NAN; // angle to object
+  float ro_dot = NAN; // rate of change of radial distance
+
+  RadarSensor(std::istream & s) 
+  {
+    sensor_type_ = MeasurementPackage::RADAR;
+    s >> ro >> phi >> ro_dot >> timestamp_;
+    x = ro * sin(phi);
+    y = ro * cos(phi);
+    raw_measurements_ = Eigen::VectorXd(3);
+    raw_measurements_ << ro, phi, ro_dot;
+  }
+  virtual ~RadarSensor(){}
+};
+
+MeasurementPackage * read_measurement(std::istream & s);
+
 
 #endif /* MEASUREMENT_PACKAGE_H_ */

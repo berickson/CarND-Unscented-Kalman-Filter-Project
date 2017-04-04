@@ -1040,6 +1040,10 @@ ground_truth_package.h
 measurement_package.h
 /home/brian/CarND/Unscented-Kalman-Filter-Project/src/measurement_package.h
 
+/home/brian/CarND/Unscented-Kalman-Filter-Project/src/measurement_package.cpp
+measurement_package.h
+/home/brian/CarND/Unscented-Kalman-Filter-Project/src/measurement_package.h
+
 /home/brian/CarND/Unscented-Kalman-Filter-Project/src/measurement_package.h
 Eigen/Dense
 /home/brian/CarND/Unscented-Kalman-Filter-Project/src/Eigen/Dense

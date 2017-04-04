@@ -150,6 +150,33 @@ src/main.cpp.s:
 	$(MAKE) -f CMakeFiles/UnscentedKF.dir/build.make CMakeFiles/UnscentedKF.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+src/measurement_package.o: src/measurement_package.cpp.o
+
+.PHONY : src/measurement_package.o
+
+# target to build an object file
+src/measurement_package.cpp.o:
+	$(MAKE) -f CMakeFiles/UnscentedKF.dir/build.make CMakeFiles/UnscentedKF.dir/src/measurement_package.cpp.o
+.PHONY : src/measurement_package.cpp.o
+
+src/measurement_package.i: src/measurement_package.cpp.i
+
+.PHONY : src/measurement_package.i
+
+# target to preprocess a source file
+src/measurement_package.cpp.i:
+	$(MAKE) -f CMakeFiles/UnscentedKF.dir/build.make CMakeFiles/UnscentedKF.dir/src/measurement_package.cpp.i
+.PHONY : src/measurement_package.cpp.i
+
+src/measurement_package.s: src/measurement_package.cpp.s
+
+.PHONY : src/measurement_package.s
+
+# target to generate assembly for a file
+src/measurement_package.cpp.s:
+	$(MAKE) -f CMakeFiles/UnscentedKF.dir/build.make CMakeFiles/UnscentedKF.dir/src/measurement_package.cpp.s
+.PHONY : src/measurement_package.cpp.s
+
 src/tools.o: src/tools.cpp.o
 
 .PHONY : src/tools.o
@@ -216,6 +243,9 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/measurement_package.o"
+	@echo "... src/measurement_package.i"
+	@echo "... src/measurement_package.s"
 	@echo "... src/tools.o"
 	@echo "... src/tools.i"
 	@echo "... src/tools.s"
