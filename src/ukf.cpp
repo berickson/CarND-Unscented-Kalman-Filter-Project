@@ -57,6 +57,10 @@ UKF::UKF() {
 
 UKF::~UKF() {}
 
+
+void UKF::GenerateSigmaPoints(MatrixXd * Xsig_out) {
+}
+
 /**
  * @param {Measurement} meas_package The latest measurement data of
  * either radar or laser.
@@ -82,6 +86,21 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+  //create sigma point matrix
+  MatrixXd Xsig = MatrixXd(n_x_, 2 * n_x_ + 1);
+  {
+    //calculate square root of P
+    MatrixXd A = P_.llt().matrixL();
+
+    Xsig.col(0) = x_;
+    float spread = sqrt(lambda_ + n_x_);
+    for (int i = 0; i < n_x_; i++)
+    {
+        Xsig.col(i+1)     = x_ + spread * A.col(i);
+        Xsig.col(i+1+n_x_) = x_ - spread * A.col(i);
+    }
+  }
+
 }
 
 /**

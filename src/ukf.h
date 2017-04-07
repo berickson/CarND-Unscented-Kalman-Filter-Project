@@ -60,13 +60,13 @@ public:
   VectorXd weights_;
 
   ///* State dimension
-  int n_x_;
+  int n_x_ = 5;
 
   ///* Augmented state dimension
   int n_aug_ = 0;
 
   ///* Sigma point spreading parameter
-  double lambda_ = NAN;
+  double lambda_ = 3 - n_x_;
 
   ///* the current NIS for radar
   double NIS_radar_ = NAN;
@@ -83,6 +83,9 @@ public:
    * Destructor
    */
   virtual ~UKF();
+
+
+  void GenerateSigmaPoints(MatrixXd* Xsig_out);
 
   /**
    * ProcessMeasurement
