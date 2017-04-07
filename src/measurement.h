@@ -1,5 +1,5 @@
-#ifndef MEASUREMENT_PACKAGE_H_
-#define MEASUREMENT_PACKAGE_H_
+#ifndef MEASUREMENT_H_
+#define MEASUREMENT_H_
 
 #include "Eigen/Dense"
 #include <memory>
@@ -15,7 +15,7 @@ protected:
 };
 
 
-struct MeasurementPackage {
+struct Measurement {
 public:
   long long timestamp_;
   float x = NAN;
@@ -29,38 +29,38 @@ public:
   Eigen::VectorXd raw_measurements_;
 };
 
-struct LaserSensor : public MeasurementPackage
+struct LaserMeasurement : public Measurement
 {
 public:
-  LaserSensor(std::istream & s) 
+  LaserMeasurement(std::istream & s) 
   {
-    sensor_type_ = MeasurementPackage::LASER;
+    sensor_type_ = Measurement::LASER;
     s >> x >> y >> timestamp_;
     raw_measurements_ = Eigen::VectorXd(2);
     raw_measurements_ << x, y;
   }
-  virtual ~LaserSensor(){}
+  virtual ~LaserMeasurement(){}
 };
 
-struct RadarSensor : public MeasurementPackage {
+struct RadarMeasurement : public Measurement {
 public:
   float ro = NAN;  // radial distance to object
   float phi = NAN; // angle to object
   float ro_dot = NAN; // rate of change of radial distance
 
-  RadarSensor(std::istream & s) 
+  RadarMeasurement(std::istream & s) 
   {
-    sensor_type_ = MeasurementPackage::RADAR;
+    sensor_type_ = Measurement::RADAR;
     s >> ro >> phi >> ro_dot >> timestamp_;
     x = ro * sin(phi);
     y = ro * cos(phi);
     raw_measurements_ = Eigen::VectorXd(3);
     raw_measurements_ << ro, phi, ro_dot;
   }
-  virtual ~RadarSensor(){}
+  virtual ~RadarMeasurement(){}
 };
 
-MeasurementPackage * read_measurement(std::istream & s);
+Measurement * read_measurement(std::istream & s);
 
 
 #endif /* MEASUREMENT_PACKAGE_H_ */

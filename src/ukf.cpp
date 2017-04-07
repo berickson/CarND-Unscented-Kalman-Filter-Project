@@ -20,6 +20,7 @@ UKF::UKF() {
 
   // initial state vector
   x_ = VectorXd(5);
+  x_ << 0,0,0,0,0;
 
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
@@ -57,10 +58,10 @@ UKF::UKF() {
 UKF::~UKF() {}
 
 /**
- * @param {MeasurementPackage} meas_package The latest measurement data of
+ * @param {Measurement} meas_package The latest measurement data of
  * either radar or laser.
  */
-void UKF::ProcessMeasurement(MeasurementPackage & meas_package) {
+void UKF::ProcessMeasurement(Measurement & meas_package) {
   /**
   TODO:
 
@@ -85,9 +86,9 @@ void UKF::Prediction(double delta_t) {
 
 /**
  * Updates the state and the state covariance matrix using a laser measurement.
- * @param {MeasurementPackage} meas_package
+ * @param {Measurement} meas_package
  */
-void UKF::UpdateLidar(MeasurementPackage & meas_package) {
+void UKF::UpdateLidar(Measurement & meas_package) {
   /**
   TODO:
 
@@ -100,9 +101,9 @@ void UKF::UpdateLidar(MeasurementPackage & meas_package) {
 
 /**
  * Updates the state and the state covariance matrix using a radar measurement.
- * @param {MeasurementPackage} meas_package
+ * @param {Measurement} meas_package
  */
-void UKF::UpdateRadar(MeasurementPackage & meas_package) {
+void UKF::UpdateRadar(Measurement & meas_package) {
   /**
   TODO:
 

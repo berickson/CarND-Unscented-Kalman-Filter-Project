@@ -1,5 +1,8 @@
 {
+    "csv-preview.separator": "\t",
+    "csv-preview.theme": "cleanlight",
     "files.associations": {
+        "*.tsv":"csv",
         "dense": "cpp",
         "iosfwd": "cpp",
         "array": "cpp",

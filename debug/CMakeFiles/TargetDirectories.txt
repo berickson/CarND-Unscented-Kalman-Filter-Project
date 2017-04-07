@@ -1,3 +1,0 @@
-/home/brian/CarND/Unscented-Kalman-Filter-Project/debug/CMakeFiles/edit_cache.dir
-/home/brian/CarND/Unscented-Kalman-Filter-Project/debug/CMakeFiles/rebuild_cache.dir
-/home/brian/CarND/Unscented-Kalman-Filter-Project/debug/CMakeFiles/UnscentedKF.dir

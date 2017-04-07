@@ -7,7 +7,7 @@
 #include "Eigen/Dense"
 #include "ukf.h"
 #include "ground_truth_package.h"
-#include "measurement_package.h"
+#include "measurement.h"
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
    *  Set Measurements                          *
    **********************************************/
 
-  vector<MeasurementPackage *> measurement_pack_list;
+  vector<Measurement *> measurements;
   vector<GroundTruthPackage> gt_pack_list;
 
   string line;
@@ -77,10 +77,8 @@ int main(int argc, char* argv[]) {
     string sensor_type;
     GroundTruthPackage gt_package;
     istringstream iss(line);
-    MeasurementPackage * meas_package = read_measurement(iss);
-    measurement_pack_list.push_back(meas_package);
-    // MeasurementPackage meas_package(iss);
-    long long timestamp;
+    Measurement * measurement = read_measurement(iss);
+    measurements.push_back(measurement);
 
     // read ground truth data to compare later
     float x_gt;
@@ -101,12 +99,12 @@ int main(int argc, char* argv[]) {
 
   // used to compute the RMSE later
   vector<VectorXd> estimations;
-  vector<VectorXd> ground_truth;
+  vector<VectorXd> ground_truth_list;
 
   // start filtering from the second frame (the speed is unknown in the first
   // frame)
 
-  size_t number_of_measurements = measurement_pack_list.size();
+  size_t number_of_measurements = measurements.size();
 
   // column names for output file
   out_file_ << "px" << "\t";
@@ -124,8 +122,10 @@ int main(int argc, char* argv[]) {
 
 
   for (size_t k = 0; k < number_of_measurements; ++k) {
+    Measurement & measurement = *measurements[k];
+    GroundTruthPackage & ground_truth = gt_pack_list[k];
     // Call the UKF-based fusion
-    ukf.ProcessMeasurement(*measurement_pack_list[k]);
+    ukf.ProcessMeasurement(measurement);
 
     // output the estimation
     out_file_ << ukf.x_(0) << "\t"; // pos1 - est
@@ -135,20 +135,20 @@ int main(int argc, char* argv[]) {
     out_file_ << ukf.x_(4) << "\t"; // yaw_rate -est
 
     // output the measurements
-    out_file_ << measurement_pack_list[k]->x << "\t";
-    out_file_ << measurement_pack_list[k]->y << "\t";
+    out_file_ << measurement.x << "\t";
+    out_file_ << measurement.y << "\t";
 
     // output the ground truth packages
-    out_file_ << gt_pack_list[k].gt_values_(0) << "\t";
-    out_file_ << gt_pack_list[k].gt_values_(1) << "\t";
-    out_file_ << gt_pack_list[k].gt_values_(2) << "\t";
-    out_file_ << gt_pack_list[k].gt_values_(3) << "\t";
+    out_file_ << ground_truth.gt_values_(0) << "\t";
+    out_file_ << ground_truth.gt_values_(1) << "\t";
+    out_file_ << ground_truth.gt_values_(2) << "\t";
+    out_file_ << ground_truth.gt_values_(3) << "\t";
 
     // output the NIS values
     
-    if (measurement_pack_list[k]->sensor_type_ == MeasurementPackage::LASER) {
+    if (measurement.sensor_type_ == Measurement::LASER) {
       out_file_ << ukf.NIS_laser_ << "\n";
-    } else if (measurement_pack_list[k]->sensor_type_ == MeasurementPackage::RADAR) {
+    } else if (measurement.sensor_type_ == Measurement::RADAR) {
       out_file_ << ukf.NIS_radar_ << "\n";
     }
 
@@ -164,12 +164,12 @@ int main(int argc, char* argv[]) {
     ukf_x_cartesian_ << x_estimate_, y_estimate_, vx_estimate_, vy_estimate_;
     
     estimations.push_back(ukf_x_cartesian_);
-    ground_truth.push_back(gt_pack_list[k].gt_values_);
+    ground_truth_list.push_back(gt_pack_list[k].gt_values_);
   }
 
   // compute the accuracy (RMSE)
   Tools tools;
-  cout << "Accuracy - RMSE:" << endl << tools.CalculateRMSE(estimations, ground_truth) << endl;
+  cout << "Accuracy - RMSE:" << endl << tools.CalculateRMSE(estimations, ground_truth_list) << endl;
 
   // close files
   if (out_file_.is_open()) {
@@ -180,11 +180,11 @@ int main(int argc, char* argv[]) {
     in_file_.close();
   }
 
-  // free up memory
-  for (auto measurement :  measurement_pack_list ) {
-    delete measurement;
-  }
-  measurement_pack_list.clear();
+  // tidy up
+//  for (auto measurement :  measurements ) {
+//    delete measurement;
+//  }
+//  measurements.clear();
 
   cout << "Done!" << endl;
   return 0;
