@@ -88,7 +88,10 @@ void UKF::GenerateSigmaPoints(MatrixXd * Xsig_out) {
  * either radar or laser.
  */
 void UKF::ProcessMeasurement(Measurement & meas_package) {
-  Prediction();
+  long long delta_t = time_us_ == 0 ? 0 : meas_package.timestamp_ - time_us_;
+
+  Prediction(delta_t);
+  time_us_ = meas_package.timestamp_;
   if(meas_package.sensor_type_ == Measurement::SensorType::RADAR)
     UpdateRadar(meas_package);
   /**
