@@ -74,7 +74,6 @@ int main(int argc, char* argv[]) {
   // prep the measurement packages (each line represents a measurement at a
   // timestamp)
   while (getline(in_file_, line)) {
-    string sensor_type;
     GroundTruthPackage gt_package;
     istringstream iss(line);
     Measurement * measurement = read_measurement(iss);
@@ -181,10 +180,10 @@ int main(int argc, char* argv[]) {
   }
 
   // tidy up
-//  for (auto measurement :  measurements ) {
-//    delete measurement;
-//  }
-//  measurements.clear();
+  //for (auto measurement :  measurements ) {
+  //  delete measurement;
+  //}
+  //measurements.clear();
 
   cout << "Done!" << endl;
   return 0;

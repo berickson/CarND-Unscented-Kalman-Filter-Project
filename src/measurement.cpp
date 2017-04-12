@@ -12,5 +12,6 @@ Measurement * read_measurement(std::istream & s)
     } else {
       throw "Unknown sensor type";
     }
+    return rv;
   }
 
