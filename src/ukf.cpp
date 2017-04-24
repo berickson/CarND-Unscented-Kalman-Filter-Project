@@ -9,6 +9,22 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
+template <class T> T sign_of(T x) {
+  if (x > 0)
+    return T{1};
+  return T{-1.};
+}
+double normalize_angle(double d) {
+
+  if (abs(d) > 100) {
+    cout << "very large angle being normalized: " << d << endl;
+    d -= floor(d/(2*M_PI))*2.*M_PI;
+  }
+  while (d > M_PI) d-=2.*M_PI;
+  while (d < -M_PI) d+=2.*M_PI;
+  return d;
+}
+
 /**
  * Initializes Unscented Kalman filter
  */
@@ -28,10 +44,10 @@ UKF::UKF() {
 
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 30;
+  std_a_ = 1.0; // was 30
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 30;
+  std_yawdd_ = 1.0; // was 30
 
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -55,6 +71,8 @@ UKF::UKF() {
 
   Hint: one or more values initialized above might be wildly off...
   */
+  // zero timestamp is used as a special flag to say that we haven't sen a measurement yet.
+  time_us_ = 0;
 }
 
 UKF::~UKF() {}
@@ -144,7 +162,7 @@ void UKF::Prediction(double delta_t) {
 
 
   //predict sigma points
-  Xsig_pred_ = MatrixXd(15, 5);
+  Xsig_pred_ = MatrixXd(5, 15);
   for (int i = 0; i< 2*n_aug_+1; i++)
   {
     //extract values for better readability
@@ -170,7 +188,7 @@ void UKF::Prediction(double delta_t) {
     }
 
     double v_p = v;
-    double yaw_p = yaw + yawd*delta_t;
+    double yaw_p = normalize_angle(yaw + yawd*delta_t);
     double yawd_p = yawd;
 
     //add noise
@@ -204,6 +222,7 @@ void UKF::Prediction(double delta_t) {
     x_ = x_ + weights(i) * Xsig_pred_.col(i);
   }
 
+  cout << "Xsig_pred" << endl << "---------------" << endl << Xsig_pred_ << endl;
   //predicted state covariance matrix
   P_.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
@@ -211,8 +230,7 @@ void UKF::Prediction(double delta_t) {
     // state difference
     VectorXd x_diff = Xsig_pred_.col(i) - x_;
     //angle normalization
-    while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
-    while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
+    x_diff(3) = normalize_angle(x_diff(3));
 
     P_ = P_ + weights(i) * x_diff * x_diff.transpose() ;
   }
@@ -296,8 +314,7 @@ void UKF::UpdateRadar(Measurement & meas_package) {
     VectorXd z_diff = Zsig.col(i) - z_pred;
 
     //angle normalization
-    while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
-    while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+    z_diff(1) = normalize_angle(z_diff(1));
 
     S = S + weights(i) * z_diff * z_diff.transpose();
   }

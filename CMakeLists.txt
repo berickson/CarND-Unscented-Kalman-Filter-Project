@@ -9,5 +9,6 @@ set(sources
    src/main.cpp
    src/tools.cpp
    src/measurement.cpp)
+set(INCLUDE_DIRECTORIES $(PROJECT_SOURCE_DIR))
 
 add_executable(UnscentedKF ${sources})
