@@ -71,7 +71,7 @@ UKF::UKF() {
 
   Hint: one or more values initialized above might be wildly off...
   */
-  // zero timestamp is used as a special flag to say that we haven't sen a measurement yet.
+  // zero timestamp is used as a special flag to say that we haven't seen a measurement yet.
   time_us_ = 0;
 }
 

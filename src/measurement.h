@@ -18,13 +18,30 @@ protected:
 struct Measurement {
 public:
   long long timestamp_;
-  float x = NAN;
-  float y = NAN;
+
+  // decoded state variables
+  float p_x = NAN;
+  float p_y = NAN;
+  float v = NAN;
+  float yaw = NAN;
+  float yaw_dot = NAN;
+
+  // observation model, aka Measurement marix
+  Eigen::MatrixXd H;
+
+  // measurement covariance
+  Eigen::MatrixXd R;
+
+  // measurement / observation
+  Eigen::VectorXd z;
+
+
 
   enum SensorType{
     LASER,
     RADAR
   } sensor_type_;
+
 
   Eigen::VectorXd raw_measurements_;
 };
@@ -35,9 +52,9 @@ public:
   LaserMeasurement(std::istream & s) 
   {
     sensor_type_ = Measurement::LASER;
-    s >> x >> y >> timestamp_;
+    s >> p_x >> p_y >> timestamp_;
     raw_measurements_ = Eigen::VectorXd(2);
-    raw_measurements_ << x, y;
+    raw_measurements_ << p_x, p_y;
   }
   virtual ~LaserMeasurement(){}
 };
@@ -52,8 +69,8 @@ public:
   {
     sensor_type_ = Measurement::RADAR;
     s >> ro >> phi >> ro_dot >> timestamp_;
-    x = ro * sin(phi);
-    y = ro * cos(phi);
+    p_x = ro * sin(phi);
+    p_y = ro * cos(phi);
     raw_measurements_ = Eigen::VectorXd(3);
     raw_measurements_ << ro, phi, ro_dot;
   }

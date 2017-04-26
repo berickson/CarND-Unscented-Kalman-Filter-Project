@@ -134,8 +134,8 @@ int main(int argc, char* argv[]) {
     out_file_ << ukf.x_(4) << "\t"; // yaw_rate -est
 
     // output the measurements
-    out_file_ << measurement.x << "\t";
-    out_file_ << measurement.y << "\t";
+    out_file_ << measurement.p_x << "\t";
+    out_file_ << measurement.p_y << "\t";
 
     // output the ground truth packages
     out_file_ << ground_truth.gt_values_(0) << "\t";
