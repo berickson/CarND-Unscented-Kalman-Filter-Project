@@ -87,8 +87,6 @@ public:
   virtual ~UKF();
 
 
-  void GenerateSigmaPoints(MatrixXd* Xsig_out);
-
   /**
    * ProcessMeasurement
    * @param meas_package The latest measurement data of either radar or laser
