@@ -4,8 +4,11 @@
 #include "Eigen/Dense"
 #include <memory>
 #include <sstream>
+#include "tools.h"
 
 using namespace std;
+
+
 
 class Sensor {
 public:
@@ -14,6 +17,8 @@ protected:
   Sensor(){}
 };
 
+
+void normalize_ctrv(Eigen::VectorXd & x);
 
 struct Measurement {
 public:
@@ -26,8 +31,8 @@ public:
   float yaw = NAN;
   float yaw_dot = NAN;
 
-  // observation model, aka Measurement marix
-  Eigen::MatrixXd H;
+  // measurement information
+  int n_z = NAN;
 
   // measurement covariance
   Eigen::MatrixXd R;
@@ -36,6 +41,9 @@ public:
   Eigen::VectorXd z;
 
   virtual void get_ctrv_state(Eigen::VectorXd & x) {}
+
+  virtual void state_to_measure(Eigen::VectorXd x, Eigen::VectorXd &z) {}
+  virtual void normalize_measure(Eigen::VectorXd &z){}
 
   enum SensorType{
     LASER,
@@ -48,18 +56,18 @@ public:
 
 struct LaserMeasurement : public Measurement
 {
-public:
-  LaserMeasurement(std::istream & s) 
-  {
-    sensor_type_ = Measurement::LASER;
-    s >> p_x >> p_y >> timestamp_;
-    raw_measurements_ = Eigen::VectorXd(2);
-    raw_measurements_ << p_x, p_y;
-  }
+  // Laser measurement noise standard deviation position1 in m
+  const float std_laspx_ = 0.15;
 
-  virtual void get_ctrv_state(Eigen::VectorXd & x){
-    x << p_x, p_y, 0, 0, 0;
-  }
+  // Laser measurement noise standard deviation position2 in m
+  const float std_laspy_ = 0.15;
+
+public:
+  LaserMeasurement(std::istream & s);
+
+  virtual void get_ctrv_state(Eigen::VectorXd & x);
+
+  virtual void state_to_measure(Eigen::VectorXd x, Eigen::VectorXd &z);
 
   virtual ~LaserMeasurement(){}
 };
@@ -70,18 +78,21 @@ public:
   float phi = NAN; // angle to object
   float ro_dot = NAN; // rate of change of radial distance
 
-  RadarMeasurement(std::istream & s) 
-  {
-    sensor_type_ = Measurement::RADAR;
-    s >> ro >> phi >> ro_dot >> timestamp_;
-    p_x = ro * cos(phi);
-    p_y = ro * sin(phi);
-    auto v_x = ro_dot * cos(phi);
-    auto v_y = ro_dot * sin(phi);
-    v = sqrt(v_x * v_x + v_y + v_y);
-    raw_measurements_ = Eigen::VectorXd(3);
-    raw_measurements_ << ro, phi, ro_dot;
-  }
+  ///* Radar measurement noise standard deviation radius in m
+  const double std_radr = 0.3;
+
+  ///* Radar measurement noise standard deviation angle in rad
+  const double std_radrphi = 0.03;
+
+  ///* Radar measurement noise standard deviation radius change in m/s
+  const double std_radrd = 0.3;
+
+  RadarMeasurement(std::istream & s);
+
+  // sets measure vector z for the given state vector x
+  virtual void state_to_measure(Eigen::VectorXd x, Eigen::VectorXd &z);
+
+  virtual void normalize_measure(Eigen::VectorXd &z);
 
   virtual void get_ctrv_state(Eigen::VectorXd &x) {
     x << p_x, p_y, v, 0, 0;

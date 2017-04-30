@@ -145,11 +145,7 @@ int main(int argc, char* argv[]) {
 
     // output the NIS values
     
-    if (measurement.sensor_type_ == Measurement::LASER) {
-      out_file_ << ukf.NIS_laser_ << "\n";
-    } else if (measurement.sensor_type_ == Measurement::RADAR) {
-      out_file_ << ukf.NIS_radar_ << "\n";
-    }
+    out_file_ << ukf.NIS_ << endl;
 
 
     // convert ukf x vector to cartesian to compare to ground truth

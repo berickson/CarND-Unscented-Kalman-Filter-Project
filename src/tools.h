@@ -3,6 +3,8 @@
 #include <vector>
 #include "Eigen/Dense"
 
+double normalize_angle(double d);
+
 class Tools {
 public:
   /**

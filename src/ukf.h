@@ -41,21 +41,6 @@ public:
   ///* Process noise standard deviation yaw acceleration in rad/s^2
   double std_yawdd_;
 
-  ///* Laser measurement noise standard deviation position1 in m
-  double std_laspx_;
-
-  ///* Laser measurement noise standard deviation position2 in m
-  double std_laspy_;
-
-  ///* Radar measurement noise standard deviation radius in m
-  double std_radr_;
-
-  ///* Radar measurement noise standard deviation angle in rad
-  double std_radphi_;
-
-  ///* Radar measurement noise standard deviation radius change in m/s
-  double std_radrd_ ;
-
   ///* Weights of sigma points
   VectorXd weights_;
 
@@ -68,11 +53,9 @@ public:
   ///* Sigma point spreading parameter
   double lambda_ = 3 - n_x_;
 
-  ///* the current NIS for radar
-  double NIS_radar_ = NAN;
 
-  ///* the current NIS for laser
-  double NIS_laser_ = NAN;
+  // the current NIS for either measure type
+  double NIS_ = NAN;
 
 
 
@@ -110,7 +93,7 @@ public:
    * Updates the state and the state covariance matrix using a radar measurement
    * @param meas_package The measurement at k+1
    */
-  void UpdateRadar(Measurement & meas_package);
+  void Update(Measurement & meas_package);
 };
 
 #endif /* UKF_H */
