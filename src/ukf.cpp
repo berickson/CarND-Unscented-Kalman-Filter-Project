@@ -41,7 +41,11 @@ UKF::UKF() {
 
   // initial covariance matrix
   P_ = MatrixXd::Constant(5, 5, 1000);  // large covariance to make first measurement set values.
-
+  P_ << 1, 0, 0, 0, 0,
+        0, 1, 0, 0, 0,
+        0, 0, 1, 0, 0,
+        0, 0, 0, 1, 0,
+        0, 0, 0, 0, 1;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 1.0; // was 30
@@ -71,8 +75,28 @@ UKF::UKF() {
 
   Hint: one or more values initialized above might be wildly off...
   */
+
+  // wait for first measurement
+  is_initialized_ = false;
+
   // zero timestamp is used as a special flag to say that we haven't seen a measurement yet.
   time_us_ = 0;
+
+  // state dimension
+  n_x_ = 5;
+
+  // augmented state dimension
+  n_aug_ = 7;
+
+  // sigma point spreading parameter
+  lambda_ = 3 - n_x_;
+
+  // the current NIS for radar
+  NIS_radar_ = NAN;
+
+  // the current NIS for laser
+  NIS_laser_ = NAN;
+
 }
 
 UKF::~UKF() {}
@@ -107,9 +131,15 @@ void UKF::GenerateSigmaPoints(MatrixXd * Xsig_out) {
  */
 void UKF::ProcessMeasurement(Measurement & meas_package) {
   long long delta_t = time_us_ == 0 ? 0 : meas_package.timestamp_ - time_us_;
+  time_us_ = meas_package.timestamp_;
+  if(!is_initialized_){
+    meas_package.get_ctrv_state(x_);
+    cout << "initial state" << x_;
+    // is_initialized_ = true;
+    return;
+  }
 
   Prediction(delta_t);
-  time_us_ = meas_package.timestamp_;
   if(meas_package.sensor_type_ == Measurement::SensorType::RADAR)
     UpdateRadar(meas_package);
   /**
@@ -222,7 +252,7 @@ void UKF::Prediction(double delta_t) {
     x_ = x_ + weights(i) * Xsig_pred_.col(i);
   }
 
-  cout << "Xsig_pred" << endl << "---------------" << endl << Xsig_pred_ << endl;
+  // cout << "Xsig_pred" << endl << "---------------" << endl << Xsig_pred_ << endl;
   //predicted state covariance matrix
   P_.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
@@ -306,6 +336,7 @@ void UKF::UpdateRadar(Measurement & meas_package) {
       z_pred = z_pred + weights(i) * Zsig.col(i);
   }
 
+
   //measurement covariance matrix S
   MatrixXd S = MatrixXd(n_z,n_z);
   S.fill(0.0);
@@ -318,6 +349,10 @@ void UKF::UpdateRadar(Measurement & meas_package) {
 
     S = S + weights(i) * z_diff * z_diff.transpose();
   }
+
+  // todo: perform regular kalman filter update
+  //       to update state based and cov on z_pred
+
 
   // calculate NIS
   {

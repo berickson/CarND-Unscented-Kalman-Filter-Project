@@ -35,7 +35,7 @@ public:
   // measurement / observation
   Eigen::VectorXd z;
 
-
+  virtual void get_ctrv_state(Eigen::VectorXd & x) {}
 
   enum SensorType{
     LASER,
@@ -56,6 +56,11 @@ public:
     raw_measurements_ = Eigen::VectorXd(2);
     raw_measurements_ << p_x, p_y;
   }
+
+  virtual void get_ctrv_state(Eigen::VectorXd & x){
+    x << p_x, p_y, 0, 0, 0;
+  }
+
   virtual ~LaserMeasurement(){}
 };
 
@@ -69,11 +74,19 @@ public:
   {
     sensor_type_ = Measurement::RADAR;
     s >> ro >> phi >> ro_dot >> timestamp_;
-    p_x = ro * sin(phi);
-    p_y = ro * cos(phi);
+    p_x = ro * cos(phi);
+    p_y = ro * sin(phi);
     raw_measurements_ = Eigen::VectorXd(3);
     raw_measurements_ << ro, phi, ro_dot;
   }
+
+  virtual void get_ctrv_state(Eigen::VectorXd &x) {
+    auto v_x = ro_dot * cos(phi);
+    auto v_y = ro_dot * sin(phi);
+    auto v = sqrt(v_x * v_x + v_y + v_y);
+    x << p_x, p_y, v, 0, 0;
+  }
+
   virtual ~RadarMeasurement(){}
 };
 
