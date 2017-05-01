@@ -30,6 +30,9 @@ LaserMeasurement::LaserMeasurement(istream &s)
       0, std_laspy_*std_laspy_;
 
   s >> p_x >> p_y >> timestamp_;
+  // avoid origin issues
+  if(fabs(p_x)<0.01) p_x = 0.01;
+  if(fabs(p_y)<0.01) p_y = 0.01;
   raw_measurements_ = Eigen::VectorXd(2);
   raw_measurements_ << p_x, p_y;
 }
@@ -54,8 +57,13 @@ RadarMeasurement::RadarMeasurement(istream &s)
       0, 0,std_radrd*std_radrd;
 
   s >> ro >> phi >> ro_dot >> timestamp_;
+  if(fabs(ro) < 0.01) {
+    ro = 0.01;
+  }
   p_x = ro * cos(phi);
   p_y = ro * sin(phi);
+
+
   auto v_x = ro_dot * cos(phi);
   auto v_y = ro_dot * sin(phi);
   v = sqrt(v_x * v_x + v_y + v_y);
@@ -75,10 +83,19 @@ void RadarMeasurement::state_to_measure(Eigen::VectorXd x, Eigen::VectorXd &z) {
 
   // measurement model
   z(0) = sqrt(p_x*p_x + p_y*p_y);                        //r
-  z(1) = atan2(p_y,p_x);                                 //phi
-  z(2) = (p_x*v1 + p_y*v2 ) / sqrt(p_x*p_x + p_y*p_y);   //r_dot
+  if(fabs(p_y) > 0.01 || fabs(p_x) > 0.01) { //phi
+    z(1) = atan2(p_y,p_x);
+    z(2) = (p_x*v1 + p_y*v2 ) / sqrt(p_x*p_x + p_y*p_y);   //r_dot
+  } else {
+    z(1) = 0.0;
+    z(2) = 0.0;
+  }
 }
 
 void RadarMeasurement::normalize_measure(Eigen::VectorXd &z) {
   z(1) = normalize_angle(z(1));
+}
+
+void RadarMeasurement::get_ctrv_state(Eigen::VectorXd &x) {
+  x << p_x, p_y, v, 0, 0;
 }

@@ -27,9 +27,7 @@ public:
   // decoded state variables
   float p_x = NAN;
   float p_y = NAN;
-  float v = NAN;
-  float yaw = NAN;
-  float yaw_dot = NAN;
+  float v = 0.0;
 
   // measurement information
   int n_z = NAN;
@@ -94,9 +92,7 @@ public:
 
   virtual void normalize_measure(Eigen::VectorXd &z);
 
-  virtual void get_ctrv_state(Eigen::VectorXd &x) {
-    x << p_x, p_y, v, 0, 0;
-  }
+  virtual void get_ctrv_state(Eigen::VectorXd &x);
 
   virtual ~RadarMeasurement(){}
 };

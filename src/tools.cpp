@@ -47,7 +47,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 
 double normalize_angle(double d) {
 
-  if (abs(d) > 100) {
+  if (fabs(d) > 100) {
     d -= floor(d/(2*M_PI))*2.*M_PI;
   }
   while (d > M_PI) d-=2.*M_PI;

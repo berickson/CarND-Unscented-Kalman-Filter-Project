@@ -40,7 +40,7 @@ UKF::UKF() {
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 0.5;     // was 30, optimized by manual parameter search
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 3.0; //1.0; // was 30, optimized by manual parameter search
+  std_yawdd_ = 0.8; //1.0; // was 30, optimized by manual parameter search
 
 
   // wait for first measurement
@@ -77,15 +77,23 @@ UKF::~UKF() {}
  */
 void UKF::ProcessMeasurement(Measurement & meas_package) {
   double delta_t = (meas_package.timestamp_ - time_us_)/1E6;
-  time_us_ = meas_package.timestamp_;
   if(!is_initialized_){
     meas_package.get_ctrv_state(x_);
     is_initialized_ = true;
+    time_us_ = meas_package.timestamp_;
     return;
   }
+  if(meas_package.sensor_type_ == Measurement::SensorType::LASER && ! use_laser_)
+    return;
+  if(meas_package.sensor_type_ == Measurement::SensorType::RADAR && ! use_radar_)
+    return;
 
   Prediction(delta_t);
+  time_us_ = meas_package.timestamp_;
   Update(meas_package);
+  if(isnan(x_(0)) || fabs(x_(0)) > 1000 || fabs(x_(1)) > 1000|| fabs(x_(2)) > 1000|| fabs(x_(3)) > 1000|| fabs(x_(4)) > 1000 ) {
+    cout << "bad value for x" << endl;
+  }
 }
 
 /**
@@ -180,6 +188,7 @@ void UKF::Prediction(double delta_t) {
   x_.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     x_ = x_ + weights_(i) * Xsig_pred_.col(i);
+    normalize_ctrv(x_);
   }
 
   // cout << "Xsig_pred" << endl << "---------------" << endl << Xsig_pred_ << endl;
