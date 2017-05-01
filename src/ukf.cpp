@@ -33,14 +33,14 @@ UKF::UKF() {
   P_ = MatrixXd::Constant(5, 5, 0);
   P_ << 1, 0, 0, 0, 0,
         0, 1, 0, 0, 0,
-        0, 0, 1, 0, 0,
-        0, 0, 0, 1, 0,
-        0, 0, 0, 0, 1;
+        0, 0, 10, 0, 0,
+        0, 0, 0, 10, 0,
+        0, 0, 0, 0, 10;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 0.5;     // was 30, optimized by manual parameter search
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.8; //1.0; // was 30, optimized by manual parameter search
+  std_yawdd_ = 0.5; //1.0; // was 30, optimized by manual parameter search
 
 
   // wait for first measurement
